@@ -1,5 +1,12 @@
 import { redirect } from 'react-router-dom';
-import { createOrder, getMenu, getOrder } from '../services/apiRestaurant';
+import {
+  createOrder,
+  getMenu,
+  getOrder,
+  updateOrder,
+} from '../services/apiRestaurant';
+import store from '../store';
+import { clearCart } from '../features/cart/cartSlice';
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -46,7 +53,7 @@ export async function createOrderAction({ request }) {
   const order = {
     ...data,
     cart: JSON.parse(data.cart),
-    priority: data.priority === 'on',
+    priority: data.priority === 'true',
   };
 
   const errors = {};
@@ -57,6 +64,13 @@ export async function createOrderAction({ request }) {
   if (Object.keys(errors).length > 0) return errors;
 
   const newOrder = await createOrder(order);
+  store.dispatch(clearCart());
 
   return redirect(`/order/${newOrder.id}`);
+}
+
+export async function updateOrderAction({ params }) {
+  const data = { priority: true };
+  await updateOrder(params.orderId, data);
+  return null;
 }
